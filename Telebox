@@ -1,0 +1,283 @@
+title Telebox
+author Caleb Young
+homepage www.puzzlescript.net
+
+again_interval 0.05
+realtime_interval 0.25
+key_repeat_interval 10
+norepeat_action
+
+========
+OBJECTS
+========
+
+Background
+White
+00000
+00000
+00000
+00000
+00000
+
+
+TeleBox
+Orange
+00000
+0...0
+0...0
+0...0
+00000
+
+Box
+Brown
+00000
+0...0
+0...0
+0...0
+00000
+
+Wall
+lightgray
+00000
+00000
+00000
+00000
+00000
+
+Hole
+black
+
+Playerwait
+Blue
+.....
+.000.
+.000.
+.000.
+.....
+
+PlayerStart
+Blue Orange
+11111
+10001
+10001
+10001
+11111
+
+Falling1
+Blue Orange
+11111
+10001
+10001
+10001
+11111
+
+Falling2
+Blue Black orange
+11111
+12221
+12021
+12221
+11111
+
+Falling3
+black blue
+00000
+00000
+00100
+00000
+00000
+
+UpPush
+transparent
+
+DownPush
+transparent
+
+LeftPush
+transparent
+
+RightPush
+transparent
+
+ExitOpen
+green
+
+ExitClosed
+red
+
+Button
+Brown
+.....
+.000.
+.0.0.
+.000.
+.....
+
+PlayerGone
+Black
+
+=======
+LEGEND
+=======
+
+Player = PlayerStart or PlayerWait or PlayerGone
+Push = UpPush or RightPush or DownPush or LeftPush
+Exit = ExitOpen or ExitClosed
+Falling = Falling1 or Falling2 or Falling3
+
+. = Background
+# = Wall
+P = PlayerStart
+T = TeleBox
+H = Hole
+E = ExitOpen
+X = ExitClosed
+B = Box
+o = Button
+
+=======
+SOUNDS
+=======
+
+================
+COLLISIONLAYERS
+================
+
+Background
+Exit
+Push
+Hole, Button
+Player, Wall, TeleBox, Box, Falling
+
+======
+RULES
+======
+
+(starting Box)
+([ action PlayerStart ] -> [ Boxstart ]
+[ action BoxStart] -> [ PlayerStart ])
+
+(Throwing TeleBox)
+right [ > PlayerStart | no Wall no Box] -> [ PlayerWait | RightPush action TeleBox]
+left [ > PlayerStart | no Wall no Box] -> [ PlayerWait | LeftPush action TeleBox]
+up [ > PlayerStart | no Wall no Box ] -> [ PlayerWait | UpPush action TeleBox]
+down [ > PlayerStart | no Wall no Box] -> [ PlayerWait | DownPush action TeleBox]
+
+right [stationary Playerwait] [ RightPush stationary TeleBox | no Wall no Box] -> [stationary Playerwait] [  | RightPush action TeleBox ]
+left [stationary Playerwait] [ LeftPush stationary TeleBox | no Wall no Box] -> [stationary Playerwait] [  | LeftPush action TeleBox ]
+up [stationary Playerwait] [ UpPush stationary TeleBox | no Wall no Box] -> [stationary Playerwait] [  | UpPush action TeleBox ]
+down [stationary Playerwait] [ DownPush stationary TeleBox | no Wall no Box] -> [stationary Playerwait] [  | DownPush action TeleBox ]
+
+(Swap when action button is hit)
+[action PlayerWait | ... | TeleBox] -> [ | ... | PlayerStart]
+
+(Dont allow player to move until action is hit)
+[moving PlayerWait ] -> [ stationary Playerwait]
+
+
+(Falling down hole)
+[stationary PlayerStart Hole] -> [action Falling1]
+[stationary Falling1] -> [action Falling2]
+[stationary Falling2] -> [action Falling3]
+[stationary Falling3] -> [PlayerGone]
+(late [Falling] ->  [PlayerGone] again)
+
+[action PlayerGone] -> restart
+[> PlayerGone] -> restart
+
+
+(
+[player hole] -> restart
+)
+
+(Box interaction)
+right [Rightpush TeleBox | stationary Box | no Wall] -> [ | Rightpush TeleBox | Rightpush action Box] 
+left [LeftPush TeleBox | stationary Box | no Wall] -> [ | LeftPush TeleBox | LeftPush action Box] 
+up [ UpPush TeleBox | stationary Box | no Wall] -> [ | UpPush TeleBox | UpPush action Box] 
+down [DownPush TeleBox | stationary Box | no Wall] -> [ | DownPush TeleBox | DownPush action Box] 
+
+(Throwing next to box)
+right [> PlayerStart | Box | no Wall] -> [ Playerwait | RightPush action Telebox | RightPush action Box]
+left [> PlayerStart | Box | no Wall] -> [ Playerwait | LeftPush action Telebox | LeftPush action Box]
+up [> PlayerStart | Box | no Wall] -> [ Playerwait | UpPush action Telebox | UpPush action Box]
+down [> PlayerStart | Box | no Wall] -> [ Playerwait | DownPush action Telebox | DownPush action Box]
+
+
+(exit opening from button)
+[Exitclosed] [Box Button] -> [ExitOpen] [Box Button]
+[ExitOpen] [Box | Button] -> [ExitClosed] [Box | Button]
+
+(Win condition)
+[player ExitOpen] -> Win
+
+==============
+WINCONDITIONS
+==============
+
+=======
+LEVELS
+=======
+
+message press Move to throw the orange box	 press Action to teleport to it
+
+#########
+#phhhhh.#
+#hhhhhhh#
+#hhhhhhh#
+#hhhhhhh#
+#hhhhhhh#
+#hhhhhhh#
+#.hhhhhe#
+#########
+
+#########
+#phh.hh.#
+#hhhhhhh#
+#hhhhhhh#
+#.hhehh.#
+#hhhhhhh#
+#hhhhhhh#
+#.hh.hh.#
+#########
+
+#########
+#phhhhhh#
+#h.hhhh.#
+#hh.hh.h#
+#hhhe.hh#
+#hh.h.hh#
+#h.hhh.h#
+#.hhhhh.#
+#########
+
+#########
+#hhhphhh#
+#hhhBhhh#
+#hhhhhhh#
+#hhhhhhh#
+#hhhhhhh#
+#hhh.hhx#
+#hhhohhh#
+#########
+
+#########
+#hPHHHHH#
+#HHHHHHH#
+#HHHHHHH#
+#HBHHHHx#
+#HoHHHHh#
+#HhHHHHH#
+#HHHHHHH#
+#########
+
+#########
+#h.bh.oh#
+#hhhhhhh#
+#hhhhh..#
+#h.hphhh#
+#hhhhhhh#
+#h.hhhh.#
+#hhhhhxh#
+#########
+
+message Thanks for playing!
